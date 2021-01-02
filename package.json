@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@hapi/joi": "^16.1.8",
+    "app-root-path": "^3.0.0",
     "axios": "^0.19.0",
     "config": "^3.2.2",
     "cors": "^2.8.5",
@@ -23,7 +24,9 @@
     "mongodb-backup": "^1.6.9",
     "mongodb-backup-fixed": "^1.7.2",
     "mongodb-restore": "^1.6.2",
-    "mongoose": "^5.6.9"
+    "mongoose": "^5.6.9",
+    "winston": "^3.3.3",
+    "winston-daily-rotate-file": "^4.5.0"
   },
   "author": "",
   "license": "ISC"
