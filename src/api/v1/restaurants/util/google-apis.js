@@ -6,29 +6,28 @@ const constants = require(appRoot + '/src/constant');
 exports.getRestaurantByGoogleApi = async (
   location = { lat: '24.8608', log: '67.0104' },
   language = 'fr',
-  pagetoken = '',
 ) => {
   try {
-    logger.info(`calling restaurants from google api`);
-    const { data } = await axios.get(
-      `https://maps.googleapis.com/maps/api/place/nearbysearch/json`,
-      {
-        params: {
-          types: 'bar|restaurant|night_club|cafe',
-          key: constants.GOOGLE_API_KEY,
-          location: `${location.lat},${location.log}`,
-          radius: 10000,
-          language,
-          pagetoken,
-        },
-      },
-    );
-    logger.info(`succesfully get restaurants`);
+    let places = {};
+    const data = await getRestaurantsData({
+      location,
+      language,
+      pagetoken: places.next_page_token,
+    });
     logger.info(`modifying places according to our needs`);
-    let places = { next_page_token: data.next_page_token };
-    data.results.forEach((place) => {
-      const { geometry: { location: { lat = '', log = '' } = {} } = {} } =
-        place || {};
+    places = { next_page_token: data.next_page_token, ...places };
+    for (p in data.results) {
+      const place = data.results[p];
+      const {
+        geometry: { location: { lat = '', log = '' } = {} } = {},
+        photos = [],
+      } = place || {};
+      const photoreference = photos.map(
+        (photo) =>
+          `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${400}&key=${
+            constants.GOOGLE_API_KEY
+          }&photoreference=${photo.photo_reference}`,
+      );
       places.results = [
         {
           ...place,
@@ -38,10 +37,11 @@ exports.getRestaurantByGoogleApi = async (
             lat,
             log,
           ),
+          photos: photoreference,
         },
         ...(places.results || []),
       ];
-    });
+    }
 
     return places;
   } catch (error) {
@@ -68,4 +68,28 @@ const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
 
 const deg2rad = (deg) => {
   return deg * (Math.PI / 180);
+};
+
+const getRestaurantsData = async ({ location, language, pagetoken }) => {
+  try {
+    const { data } = await axios.get(
+      `https://maps.googleapis.com/maps/api/place/nearbysearch/json`,
+      {
+        params: {
+          types: 'restaurant',
+          key: constants.GOOGLE_API_KEY,
+          location: `${location.lat},${location.log}`,
+          radius: 1000,
+          language,
+          ...(pagetoken && { pagetoken }),
+          opennow: true,
+        },
+      },
+    );
+    logger.info(`succesfully get restaurants`);
+    return data;
+  } catch (error) {
+    logger.error(JSON.stringify(error));
+    return {};
+  }
 };
