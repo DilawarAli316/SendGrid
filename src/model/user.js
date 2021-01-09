@@ -7,22 +7,26 @@ const userSchema = new schema({
   full_name: {
     type: String,
   },
-  user_id: {
+  email: {
     type: String,
   },
-  password: {
+  google_id: {
+    type: String,
+    required: true,
+  },
+  given_name: {
     type: String,
   },
-  role_id: {
+  family_name: {
     type: String,
   },
-  phone_number: {
+  locale: {
     type: String,
   },
-  gender: {
+  picture: {
     type: String,
   },
-  country_code: {
+  verified_email: {
     type: String,
   },
   status: {
@@ -30,13 +34,6 @@ const userSchema = new schema({
     default: constant.USER_STATUSES.STATUS_REGISTERED,
   },
   last_login_at: {
-    type: String,
-  },
-  picture_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'storage_files',
-  },
-  address: {
     type: String,
   },
 });

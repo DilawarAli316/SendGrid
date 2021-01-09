@@ -25,4 +25,44 @@ module.exports = {
       return [];
     }
   },
+  // Is Google user in DB
+  isGoogleUserStored: async (id) => {
+    try {
+      logger.info('Searching user in database');
+      let isAvailable = await User.findOne({ google_id: id });
+      logger.info(`User availability:${isAvailable}`);
+      return isAvailable;
+    } catch (error) {
+      logger.error(JSON.stringify((error = error.stack)));
+      return false;
+    }
+  },
+  // Create google user in database
+  addGoogleUserInDb: async ({
+    email,
+    family_name,
+    given_name,
+    name,
+    id,
+    locale,
+    picture,
+    verified_email,
+  }) => {
+    try {
+      logger.info('adding user in database');
+      await User.create({
+        email,
+        family_name,
+        given_name,
+        full_name: name,
+        google_id: id,
+        locale,
+        picture,
+        verified_email,
+      });
+    } catch (error) {
+      logger.error(JSON.stringify((error = error.stack)));
+      return `user creating error ${error}`;
+    }
+  },
 };

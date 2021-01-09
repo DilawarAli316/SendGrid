@@ -22,7 +22,7 @@ exports.getRestaurantByGoogleApi = async (
         geometry: { location: { lat = '', log = '' } = {} } = {},
         photos = [],
       } = place || {};
-      const photoreference = photos.map(
+      const photoReferences = photos.map(
         (photo) =>
           `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${400}&key=${
             constants.GOOGLE_API_KEY
@@ -37,7 +37,7 @@ exports.getRestaurantByGoogleApi = async (
             lat,
             log,
           ),
-          photos: photoreference,
+          photos: photoReferences,
         },
         ...(places.results || []),
       ];

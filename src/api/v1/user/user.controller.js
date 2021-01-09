@@ -58,3 +58,33 @@ exports.getUsers = async (req, res) => {
     });
   }
 };
+
+exports.googleSignup = async (req, res) => {
+  try {
+    logger.info('In Users - Validating google users');
+    const { error } = userValidation.validateGoogleSignup.validate(req.body, {
+      abortEarly: false,
+    });
+    if (error) {
+      logger.info(`Validation error ${JSON.stringify(error.details)}`);
+      return res.status(400).json({
+        message: 'Invalid Request. Please check and try again.',
+        error: error.details,
+      });
+    }
+    logger.info('All validations passed');
+    logger.info('Destructing req.body');
+    const { id } = req.body;
+    const isUser = await userUtil.isGoogleUserStored(id);
+    if (!isUser) {
+      await userUtil.addGoogleUserInDb(req.body);
+    }
+    logger.info('User signed In');
+  } catch (error) {
+    logger.error(JSON.stringify((error = error.stack)));
+    return res.status(500).json({
+      message: 'Internal Server Error. Please try again later.',
+      error: error,
+    });
+  }
+};
