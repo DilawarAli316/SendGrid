@@ -12,3 +12,14 @@ exports.validateGetUsersData = Joi.object({
   all: Joi.boolean().optional(),
   statuses: Joi.array().optional(),
 });
+
+exports.validateGoogleSignup = Joi.object({
+  email: Joi.string().required(),
+  family_name: Joi.string().optional(),
+  given_name: Joi.string().optional(),
+  name: Joi.string().required(),
+  id: Joi.string().required(),
+  locale: Joi.string().optional(),
+  picture: Joi.string().optional(),
+  verified_email: Joi.boolean().optional(),
+});

@@ -62,6 +62,7 @@ exports.getUsers = async (req, res) => {
 exports.googleSignup = async (req, res) => {
   try {
     logger.info('In Users - Validating google users');
+    console.log(req.body);
     const { error } = userValidation.validateGoogleSignup.validate(req.body, {
       abortEarly: false,
     });
@@ -76,8 +77,16 @@ exports.googleSignup = async (req, res) => {
     logger.info('Destructing req.body');
     const { id } = req.body;
     const isUser = await userUtil.isGoogleUserStored(id);
-    if (!isUser) {
+    if (!isUser.exists) {
       await userUtil.addGoogleUserInDb(req.body);
+      return res.status(404).json({
+        message: `User created`,
+      });
+    } else {
+      return res.status(404).json({
+        message: `User Already exist`,
+        user: isUser.user,
+      });
     }
     logger.info('User signed In');
   } catch (error) {

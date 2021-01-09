@@ -29,9 +29,9 @@ module.exports = {
   isGoogleUserStored: async (id) => {
     try {
       logger.info('Searching user in database');
-      let isAvailable = await User.findOne({ google_id: id });
-      logger.info(`User availability:${isAvailable}`);
-      return isAvailable;
+      let isAvailable = await User.find({ google_id: id });
+      logger.info(`User availability: ${isAvailable.length}`);
+      return { exists: isAvailable.length, user: isAvailable[0] };
     } catch (error) {
       logger.error(JSON.stringify((error = error.stack)));
       return false;
