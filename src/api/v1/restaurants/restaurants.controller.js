@@ -20,8 +20,13 @@ exports.getRestaurants = async (req, res) => {
         error: error.details,
       });
     }
+
     logger.info('All validations passed');
-    const restaurants = await googleApis.getRestaurantByGoogleApi();
+    const { location, language = '' } = req.query;
+    const restaurants = await googleApis.getRestaurantByGoogleApi(
+      JSON.parse(location),
+      language,
+    );
     res.status(200).json({
       message: 'Restaurants data has been found successfully.',
       restaurants,

@@ -11,12 +11,12 @@ const MONGODB_URL = config.get('datasource.databaseUrl');
 
 const corsOpt = {
   origin: '*',
-  credentials: true,
+  credentials: false,
   exposedHeaders: 'authorization',
   maxAge: 10 * 60,
 };
 
-app.use(cors(corsOpt));
+app.use(cors());
 app.use(express.json());
 mongoose
   .connect(MONGODB_URL, {
