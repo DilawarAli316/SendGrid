@@ -62,7 +62,6 @@ exports.getUsers = async (req, res) => {
 exports.googleSignup = async (req, res) => {
   try {
     logger.info('In Users - Validating google users');
-    console.log(req.body);
     const { error } = userValidation.validateGoogleSignup.validate(req.body, {
       abortEarly: false,
     });

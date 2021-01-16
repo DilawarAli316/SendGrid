@@ -2,6 +2,7 @@ const axios = require('axios');
 const appRoot = require('app-root-path');
 const logger = require(appRoot + '/src/logger').apiLogger;
 const constants = require(appRoot + '/src/constant');
+const waiter = require(appRoot + '/src/model/waiter.js');
 
 exports.getRestaurantByGoogleApi = async ({
   location = { lat: '24.8608', log: '67.0104' },
@@ -31,26 +32,25 @@ exports.getRestaurantByGoogleApi = async ({
     places = { next_page_token: data.next_page_token, ...places };
     for (p in data.results) {
       const place = data.results[p];
-      const {
-        geometry: { location: { lat = '', log = '' } = {} } = {},
-        photos = [],
-      } = place || {};
+      const { place_id, photos = [] } = place || {};
       const photoReferences = photos.map(
         (photo) =>
           `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${400}&key=${
             constants.GOOGLE_API_KEY
           }&photoreference=${photo.photo_reference}`,
       );
+      const distance = await getDistanceFromLatLonInKm(
+        location.lat,
+        location.log,
+        place_id,
+      );
+      const servers = await waiter.countDocuments({ restaurant_id: place_id });
       places.results = [
         {
           ...place,
-          distance: getDistanceFromLatLonInKm(
-            location.lat,
-            location.log,
-            lat,
-            log,
-          ),
+          distance,
           photos: photoReferences,
+          servers,
         },
         ...(places.results || []),
       ];
@@ -64,23 +64,32 @@ exports.getRestaurantByGoogleApi = async ({
   }
 };
 
-const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
-  var R = 6371; // Radius of the earth in km
-  var dLat = deg2rad(lat2 - lat1); // deg2rad below
-  var dLon = deg2rad(lon2 - lon1);
-  var a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(deg2rad(lat1)) *
-      Math.cos(deg2rad(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  var d = R * c; // Distance in km
-  return d.toFixed(3);
-};
+const getDistanceFromLatLonInKm = async (lat1, lon1, place_id) => {
+  try {
+    logger.info(
+      `Calculating distance between current location:${
+        (lat1, lon1)
+      } and restaurant id:${place_id}!`,
+    );
 
-const deg2rad = (deg) => {
-  return deg * (Math.PI / 180);
+    const { data } = await axios.get(
+      `http://maps.googleapis.com/maps/api/distancematrix/json`,
+      {
+        params: {
+          key: constants.GOOGLE_API_KEY,
+          origins: `${lat1},${lon1}`,
+          destinations: {
+            place_id,
+          },
+        },
+      },
+    );
+    logger.info('successfully got the distance!');
+    return data;
+  } catch (error) {
+    logger.error(JSON.stringify(error));
+    return {};
+  }
 };
 
 const getRestaurantsData = async ({ location, language, pagetoken }) => {
@@ -114,8 +123,6 @@ const searchRestaurantsData = async ({
   pagetoken,
 }) => {
   try {
-    console.log(location);
-
     const { data } = await axios.get(
       `https://maps.googleapis.com/maps/api/place/textsearch/json`,
       {
