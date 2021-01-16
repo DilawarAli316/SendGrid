@@ -27,7 +27,7 @@ module.exports = {
   datasource: {
     databaseUrl: fromEnv(
       'MONGODB_URL',
-      'mongodb+srv://dbUser:pourboir@123@cluster0.ugghn.mongodb.net/pourboir-v1-qa?retryWrites=true&w=majority',
+      'mongodb+srv://dbUser:pourboir@123@cluster0.ugghn.mongodb.net/pourboir-v1-local?retryWrites=true&w=majority',
     ),
   },
 };
