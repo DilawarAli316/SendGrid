@@ -1,7 +1,7 @@
 const Joi = require('@hapi/joi');
 
 exports.validateGetRestaurantsData = Joi.object({
-  location: Joi.any().optional(),
+  location: Joi.any().required(),
   language: Joi.number().optional(),
   search: Joi.string().optional(),
 });
