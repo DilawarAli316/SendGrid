@@ -4,4 +4,5 @@ const restaurantController = require('./restaurants.controller');
 
 router.get('/', restaurantController.getRestaurants);
 
+
 module.exports = router;

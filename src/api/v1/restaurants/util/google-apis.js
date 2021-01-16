@@ -3,17 +3,30 @@ const appRoot = require('app-root-path');
 const logger = require(appRoot + '/src/logger').apiLogger;
 const constants = require(appRoot + '/src/constant');
 
-exports.getRestaurantByGoogleApi = async (
+exports.getRestaurantByGoogleApi = async ({
   location = { lat: '24.8608', log: '67.0104' },
   language = 'fr',
-) => {
+  next_page_token,
+  search,
+}) => {
   try {
-    let places = {};
-    const data = await getRestaurantsData({
-      location,
-      language,
-      pagetoken: places.next_page_token,
-    });
+    let places = {},
+      data = [];
+    if (!search) {
+      data = await getRestaurantsData({
+        location,
+        language,
+        pagetoken: next_page_token,
+      });
+    } else {
+      data = await searchRestaurantsData({
+        location,
+        language,
+        search,
+        pagetoken: next_page_token,
+      });
+    }
+
     logger.info(`modifying places according to our needs`);
     places = { next_page_token: data.next_page_token, ...places };
     for (p in data.results) {
@@ -76,7 +89,7 @@ const getRestaurantsData = async ({ location, language, pagetoken }) => {
       `https://maps.googleapis.com/maps/api/place/nearbysearch/json`,
       {
         params: {
-          types: 'restaurant',
+          type: 'restaurant',
           key: constants.GOOGLE_API_KEY,
           location: `${location.lat},${location.log}`,
           radius: 1000,
@@ -86,7 +99,39 @@ const getRestaurantsData = async ({ location, language, pagetoken }) => {
         },
       },
     );
-    logger.info(`succesfully get restaurants`);
+    logger.info(`successfully get restaurants`);
+    return data;
+  } catch (error) {
+    logger.error(JSON.stringify(error));
+    return {};
+  }
+};
+
+const searchRestaurantsData = async ({
+  location,
+  language,
+  search,
+  pagetoken,
+}) => {
+  try {
+    console.log(location);
+
+    const { data } = await axios.get(
+      `https://maps.googleapis.com/maps/api/place/textsearch/json`,
+      {
+        params: {
+          type: 'restaurant',
+          key: constants.GOOGLE_API_KEY,
+          query: search,
+          language,
+          location: `${location.lat},${location.log}`,
+          radius: 1000,
+          opennow: true,
+          ...(pagetoken && { pagetoken }),
+        },
+      },
+    );
+    logger.info(`successfully searched restaurants`);
     return data;
   } catch (error) {
     logger.error(JSON.stringify(error));

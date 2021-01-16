@@ -22,11 +22,24 @@ exports.getRestaurants = async (req, res) => {
     }
 
     logger.info('All validations passed');
-    const { location, language = '' } = req.query;
-    const restaurants = await googleApis.getRestaurantByGoogleApi(
-      JSON.parse(location),
-      language,
-    );
+    const { location, language = '', search = '', pagetoken } = req.query;
+    let restaurants = {};
+    if (search) {
+      logger.info(`Searching for restaurant: ${search}`);
+      restaurants = await googleApis.getRestaurantByGoogleApi({
+        ...(location && { location: JSON.parse(location) }),
+        language,
+        pagetoken,
+        search,
+      });
+    } else {
+      restaurants = await googleApis.getRestaurantByGoogleApi({
+        ...(location && { location: JSON.parse(location) }),
+        language,
+        pagetoken,
+      });
+    }
+
     res.status(200).json({
       message: 'Restaurants data has been found successfully.',
       restaurants,

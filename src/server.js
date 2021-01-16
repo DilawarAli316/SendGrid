@@ -18,7 +18,7 @@ const corsOpt = {
 
 app.use(cors());
 app.use(express.json());
-mongoose
+mongoose 
   .connect(MONGODB_URL, {
     useNewUrlParser: true,
     useCreateIndex: true,
